@@ -41,6 +41,15 @@ const App = () => {
     setIngredientQuery("");
   };
 
+  const handleResetIngredients = () => {
+    setCurrentIngredients([]);
+    setRecipes([]);
+  };
+
+  const handleRemoveIngredient = (ingredientId) => {
+    setCurrentIngredients((prev) => prev.filter((ing) => ing.id!== ingredientId));
+  };
+
   const handleCheckboxChange = () => {
     setAllowOthers((prev) => !prev);
   };
@@ -98,7 +107,7 @@ const App = () => {
         <h2>Current Ingredients:</h2>
         <ul>
           {currentIngredients.map((ingredient) => {
-            return <li key={ingredient.id}>{ingredient.name}</li>;
+            return <li key={ingredient.id}>{ingredient.name} <button onClick={() => handleRemoveIngredient(ingredient.id)}>Remove</button></li>;
           })}
         </ul>
         <label>
@@ -110,6 +119,7 @@ const App = () => {
           Allow other ingredients
         </label>
         <button onClick={handleSearchRecipe}>Search Recipes</button>
+        <button onClick={handleResetIngredients}>Reset ingredients</button>
       </div>
       <div>
         <h2>Recipes</h2>
