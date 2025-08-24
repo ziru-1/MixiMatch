@@ -37,6 +37,11 @@ const App = () => {
   }, [ingredientQuery]);
 
   const handleIngredientClick = (ingredient) => {
+    if (currentIngredients.find((ing) => ing.id === ingredient.id)) {
+      alert("Ingredient already added.");
+      return;
+    }
+    
     setCurrentIngredients((prev) => [...prev, ingredient]);
     setIngredientQuery("");
   };
