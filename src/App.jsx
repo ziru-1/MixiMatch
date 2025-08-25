@@ -1,6 +1,13 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import {
+  fetchIngredientSuggestions,
+  fetchRecipesByIngredients,
+} from "./api/spoonacular";
+import IngredientList from "./components/IngredientList";
+import CurrentIngredients from "./components/CurrentIngredients";
+import RecipeList from "./components/RecipeList";
+import RecipeControls from "./components/RecipeControls";
 
 const App = () => {
   const [ingredientQuery, setIngredientQuery] = useState("");
@@ -9,10 +16,6 @@ const App = () => {
   const [recipes, setRecipes] = useState([]);
   const [allowOthers, setAllowOthers] = useState(false);
 
-  const handleIngredientQueryChange = (e) => {
-    setIngredientQuery(e.target.value);
-  };
-
   useEffect(() => {
     if (!ingredientQuery) {
       setIngredients([]);
@@ -20,15 +23,9 @@ const App = () => {
     }
 
     const debounceTimeout = setTimeout(() => {
-      axios
-        .get(
-          `https://api.spoonacular.com/food/ingredients/autocomplete?query=${ingredientQuery}&metaInformation=true&number=5&apiKey=${
-            import.meta.env.VITE_API_KEY
-          }`
-        )
-        .then((response) => {
-          setIngredients(response.data);
-        });
+      fetchIngredientSuggestions(ingredientQuery).then((data) => {
+        setIngredients(data);
+      });
     }, 250);
 
     return () => {
@@ -41,7 +38,7 @@ const App = () => {
       alert("Ingredient already added.");
       return;
     }
-    
+
     setCurrentIngredients((prev) => [...prev, ingredient]);
     setIngredientQuery("");
   };
@@ -52,7 +49,9 @@ const App = () => {
   };
 
   const handleRemoveIngredient = (ingredientId) => {
-    setCurrentIngredients((prev) => prev.filter((ing) => ing.id!== ingredientId));
+    setCurrentIngredients((prev) =>
+      prev.filter((ing) => ing.id !== ingredientId)
+    );
   };
 
   const handleCheckboxChange = () => {
@@ -69,76 +68,42 @@ const App = () => {
       .map((ingredient) => ingredient.name)
       .join(",");
 
-    axios
-      .get(
-        `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredientNames}&number=10&ranking=2&apiKey=${
-          import.meta.env.VITE_API_KEY
-        }`
-      )
-      .then((response) => {
-        if (allowOthers) {
-          return setRecipes(response.data);
-        }
+    fetchRecipesByIngredients(ingredientNames).then((response) => {
+      if (allowOthers) {
+        return setRecipes(response.data);
+      }
 
-        // Recipes with no additional ingredients
-        const recipeFilter = response.data.filter(
-          (recipe) => recipe.missedIngredientCount === 0
-        );
-        setRecipes(recipeFilter);
-      });
+      // Recipes with no additional ingredients
+      const recipeFilter = response.data.filter(
+        (recipe) => recipe.missedIngredientCount === 0
+      );
+      setRecipes(recipeFilter);
+    });
   };
 
   return (
     <div>
       <input
         value={ingredientQuery}
-        onChange={handleIngredientQueryChange}
+        onChange={(e) => setIngredientQuery(e.target.value)}
         type="text"
         placeholder="Search for an ingredient"
       />
-      <div>
-        {ingredients.map((ingredient) => {
-          return (
-            <div
-              onClick={() => handleIngredientClick(ingredient)}
-              key={ingredient.id}
-            >
-              {ingredient.name}
-            </div>
-          );
-        })}
-      </div>
-      <div>
-        <h2>Current Ingredients:</h2>
-        <ul>
-          {currentIngredients.map((ingredient) => {
-            return <li key={ingredient.id}>{ingredient.name} <button onClick={() => handleRemoveIngredient(ingredient.id)}>Remove</button></li>;
-          })}
-        </ul>
-        <label>
-          <input
-            type="checkbox"
-            checked={allowOthers}
-            onChange={handleCheckboxChange}
-          />
-          Allow other ingredients
-        </label>
-        <button onClick={handleSearchRecipe}>Search Recipes</button>
-        <button onClick={handleResetIngredients}>Reset ingredients</button>
-      </div>
-      <div>
-        <h2>Recipes</h2>
-        {recipes.map((recipe) => {
-          return (
-            <div key={recipe.id}>
-              <h3>{recipe.title}</h3>
-              <img src={recipe.image} alt={recipe.title} />
-              <p>Used Ingredients: {recipe.usedIngredientCount}</p>
-              <p>Missed Ingredients: {recipe.missedIngredientCount}</p>
-            </div>
-          );
-        })}
-      </div>
+      <IngredientList
+        ingredients={ingredients}
+        onIngredientClick={handleIngredientClick}
+      />
+      <CurrentIngredients
+        currentIngredients={currentIngredients}
+        onRemoveIngredient={handleRemoveIngredient}
+      />
+      <RecipeControls
+        allowOthers={allowOthers}
+        onCheckboxChange={handleCheckboxChange}
+        onSearchRecipe={handleSearchRecipe}
+        onResetIngredients={handleResetIngredients}
+      />
+      <RecipeList recipes={recipes} />
     </div>
   );
 };
