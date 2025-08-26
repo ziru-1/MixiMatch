@@ -33,6 +33,7 @@ const fetchRecipesByIngredients = async (ingredientNames) => {
 const fetchRecipeDetails = async (recipeId) => {
   const response = await axios.get(`${BASE_URL}/recipes/${recipeId}/information`, {
     params: {
+      includeNutrition: true,
       apiKey: API_KEY,
     },
   });
