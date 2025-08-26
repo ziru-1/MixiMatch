@@ -3,17 +3,20 @@ import { useState, useEffect } from "react";
 import {
   fetchIngredientSuggestions,
   fetchRecipesByIngredients,
+  fetchRecipeDetails
 } from "./api/spoonacular";
 import IngredientList from "./components/IngredientList";
 import CurrentIngredients from "./components/CurrentIngredients";
 import RecipeList from "./components/RecipeList";
 import RecipeControls from "./components/RecipeControls";
+import RecipeDetails from "./components/RecipeDetails";
 
 const App = () => {
   const [ingredientQuery, setIngredientQuery] = useState("");
   const [ingredients, setIngredients] = useState([]);
   const [currentIngredients, setCurrentIngredients] = useState([]);
   const [recipes, setRecipes] = useState([]);
+  const [recipeDetails, setRecipeDetails] = useState(null);
   const [allowOthers, setAllowOthers] = useState(false);
 
   useEffect(() => {
@@ -42,6 +45,13 @@ const App = () => {
     setCurrentIngredients((prev) => [...prev, ingredient]);
     setIngredientQuery("");
   };
+
+  const handleRecipeClick = (recipeId) => {
+    console.log(recipeId);
+    fetchRecipeDetails(recipeId).then((data) => {
+      setRecipeDetails(data);
+    });
+  }
 
   const handleResetIngredients = () => {
     setCurrentIngredients([]);
@@ -103,7 +113,10 @@ const App = () => {
         onSearchRecipe={handleSearchRecipe}
         onResetIngredients={handleResetIngredients}
       />
-      <RecipeList recipes={recipes} />
+      <RecipeList recipes={recipes} onRecipeClick={handleRecipeClick}/>
+      {recipeDetails && (
+        <RecipeDetails recipeDetails={recipeDetails} />
+      )}
     </div>
   );
 };

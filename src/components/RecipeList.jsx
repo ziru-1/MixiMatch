@@ -1,12 +1,12 @@
 import React from 'react'
 
-const RecipeList = ({recipes}) => {
+const RecipeList = ({recipes, onRecipeClick}) => {
   return (
     <div>
         <h2>Recipes</h2>
         {recipes.map((recipe) => {
           return (
-            <div key={recipe.id}>
+            <div key={recipe.id} onClick={() => onRecipeClick(recipe.id)}>
               <h3>{recipe.title}</h3>
               <img src={recipe.image} alt={recipe.title} />
               <p>Used Ingredients: {recipe.usedIngredientCount}</p>

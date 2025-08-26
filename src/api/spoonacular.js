@@ -30,4 +30,13 @@ const fetchRecipesByIngredients = async (ingredientNames) => {
   return response;
 };
 
-export { fetchIngredientSuggestions, fetchRecipesByIngredients };
+const fetchRecipeDetails = async (recipeId) => {
+  const response = await axios.get(`${BASE_URL}/recipes/${recipeId}/information`, {
+    params: {
+      apiKey: API_KEY,
+    },
+  });
+  return response.data;
+}
+
+export { fetchIngredientSuggestions, fetchRecipesByIngredients, fetchRecipeDetails };
